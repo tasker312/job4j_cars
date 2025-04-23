@@ -1,4 +1,5 @@
 # job4j_cars. Сайт по продаже машин
+[![Java CI with Maven](https://github.com/tasker312/job4j_cars/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/tasker312/job4j_cars/actions/workflows/maven.yml)
 
 ---
 
