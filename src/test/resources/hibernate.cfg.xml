@@ -6,8 +6,8 @@
     <session-factory>
         <property name="hibernate.connection.driver_class">org.h2.Driver</property>
         <property name="hibernate.connection.url">jdbc:h2:./testdb;MODE=PostgreSQL;CASE_INSENSITIVE_IDENTIFIERS=TRUE;</property>
-        <property name="hibernate.connection.username"></property>
-        <property name="hibernate.connection.password"></property>
+        <property name="hibernate.connection.username"/>
+        <property name="hibernate.connection.password"/>
         <property name="hibernate.connection.pool_size">1</property>
         <property name="hibernate.current_session_context_class">thread</property>
         <property name="hibernate.show_sql">true</property>

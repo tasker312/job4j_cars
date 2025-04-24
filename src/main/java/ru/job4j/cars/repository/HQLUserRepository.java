@@ -32,8 +32,9 @@ public class HQLUserRepository implements UserRepository {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             session.getTransaction().rollback();
+        } finally {
+            session.close();
         }
-        session.close();
         return user;
     }
 
@@ -55,8 +56,9 @@ public class HQLUserRepository implements UserRepository {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             session.getTransaction().rollback();
+        } finally {
+            session.close();
         }
-        session.close();
     }
 
     /**
@@ -75,8 +77,9 @@ public class HQLUserRepository implements UserRepository {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             session.getTransaction().rollback();
+        } finally {
+            session.close();
         }
-        session.close();
     }
 
     /**
@@ -104,10 +107,10 @@ public class HQLUserRepository implements UserRepository {
         session.beginTransaction();
         var user = session.createSelectionQuery("FROM User WHERE id = :id", User.class)
                 .setParameter("id", userId)
-                .uniqueResult();
+                .uniqueResultOptional();
         session.getTransaction().commit();
         session.close();
-        return Optional.ofNullable(user);
+        return user;
     }
 
     /**
@@ -138,10 +141,10 @@ public class HQLUserRepository implements UserRepository {
         session.beginTransaction();
         var user = session.createSelectionQuery("FROM User WHERE login = :login", User.class)
                 .setParameter("login", login)
-                .uniqueResult();
+                .uniqueResultOptional();
         session.getTransaction().commit();
         session.close();
-        return Optional.ofNullable(user);
+        return user;
     }
 
 }
