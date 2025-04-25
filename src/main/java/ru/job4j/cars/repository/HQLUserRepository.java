@@ -2,12 +2,11 @@ package ru.job4j.cars.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 import ru.job4j.cars.model.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -15,7 +14,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class HQLUserRepository implements UserRepository {
 
-    private final SessionFactory sessionFactory;
+    private final CrudRepository crudRepository;
 
     /**
      * Сохранить в базе.
@@ -24,17 +23,7 @@ public class HQLUserRepository implements UserRepository {
      * @return пользователь с id.
      */
     public User create(User user) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
-            session.persist(user);
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            session.getTransaction().rollback();
-        } finally {
-            session.close();
-        }
+        crudRepository.run(session -> session.persist(user));
         return user;
     }
 
@@ -44,21 +33,7 @@ public class HQLUserRepository implements UserRepository {
      * @param user пользователь.
      */
     public void update(User user) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
-            session.createMutationQuery("UPDATE User SET login = :login, password = :password WHERE id = :id")
-                    .setParameter("login", user.getLogin())
-                    .setParameter("password", user.getPassword())
-                    .setParameter("id", user.getId())
-                    .executeUpdate();
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            session.getTransaction().rollback();
-        } finally {
-            session.close();
-        }
+        crudRepository.run(session -> session.merge(user));
     }
 
     /**
@@ -67,19 +42,10 @@ public class HQLUserRepository implements UserRepository {
      * @param userId ID
      */
     public void delete(int userId) {
-        Session session = sessionFactory.openSession();
-        try {
-            session.beginTransaction();
-            session.createMutationQuery("DELETE FROM User WHERE id = :id")
-                    .setParameter("id", userId)
-                    .executeUpdate();
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            session.getTransaction().rollback();
-        } finally {
-            session.close();
-        }
+        crudRepository.run(
+                "delete from User where id = :fId",
+                Map.of("fId", userId)
+        );
     }
 
     /**
@@ -88,13 +54,7 @@ public class HQLUserRepository implements UserRepository {
      * @return список пользователей.
      */
     public List<User> findAllOrderById() {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        var users = session.createSelectionQuery("FROM User", User.class)
-                .getResultList();
-        session.getTransaction().commit();
-        session.close();
-        return users;
+        return crudRepository.query("FROM User ORDER BY id", User.class);
     }
 
     /**
@@ -103,14 +63,11 @@ public class HQLUserRepository implements UserRepository {
      * @return пользователь.
      */
     public Optional<User> findById(int userId) {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        var user = session.createSelectionQuery("FROM User WHERE id = :id", User.class)
-                .setParameter("id", userId)
-                .uniqueResultOptional();
-        session.getTransaction().commit();
-        session.close();
-        return user;
+        return crudRepository.optional(
+                "FROM User WHERE id = :id",
+                User.class,
+                Map.of("id", userId)
+        );
     }
 
     /**
@@ -120,14 +77,11 @@ public class HQLUserRepository implements UserRepository {
      * @return список пользователей.
      */
     public List<User> findByLikeLogin(String key) {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        var users = session.createSelectionQuery("FROM User WHERE login LIKE :key", User.class)
-                .setParameter("key", "%" + key + "%")
-                .getResultList();
-        session.getTransaction().commit();
-        session.close();
-        return users;
+        return crudRepository.query(
+                "FROM User WHERE login LIKE :key",
+                User.class,
+                Map.of("key", "%" + key + "%")
+        );
     }
 
     /**
@@ -137,14 +91,11 @@ public class HQLUserRepository implements UserRepository {
      * @return Optional or user.
      */
     public Optional<User> findByLogin(String login) {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        var user = session.createSelectionQuery("FROM User WHERE login = :login", User.class)
-                .setParameter("login", login)
-                .uniqueResultOptional();
-        session.getTransaction().commit();
-        session.close();
-        return user;
+        return crudRepository.optional(
+                "FROM User WHERE login = :login",
+                User.class,
+                Map.of("login", login)
+        );
     }
 
 }
